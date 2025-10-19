@@ -16,7 +16,7 @@ const portfolioItems = [
     title: "Ocean Story",
     category: "Film Production",
     videoId: "BmWJeWYTDt0",
-    description: "A short film reflecting the sea’s emotional connection.",
+    description: "A short film reflecting the sea's emotional connection.",
   },
   {
     id: 3,
@@ -41,7 +41,6 @@ const portfolioItems = [
   },
 ];
 
-// YT Releases content (migrated from YouTubeSection)
 interface YouTubeVideo {
   id: string;
   title: string;
@@ -105,7 +104,9 @@ const PortfolioSection = () => {
   const [selectedItem, setSelectedItem] =
     useState<typeof portfolioItems[0] | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [ytVisible, setYtVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const ytSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -113,24 +114,35 @@ const PortfolioSection = () => {
       { threshold: 0.1 }
     );
 
+    const ytObserver = new IntersectionObserver(
+      ([entry]) => entry.isIntersecting && setYtVisible(true),
+      { threshold: 0.1 }
+    );
+
     const section = sectionRef.current;
+    const ytSection = ytSectionRef.current;
+
     if (section) observer.observe(section);
-    return () => section && observer.unobserve(section);
+    if (ytSection) ytObserver.observe(ytSection);
+
+    return () => {
+      if (section) observer.unobserve(section);
+      if (ytSection) ytObserver.unobserve(ytSection);
+    };
   }, []);
 
   return (
-    <section id="portfolio" className="py-20 bg-black-soft" ref={sectionRef}>
+    <section id="portfolio" className="py-20 bg-gradient-to-b from-black via-black-soft to-black" ref={sectionRef}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* ✅ Updated heading and subtext */}
         <div
-          className={`text-center mb-16 ${
-            isVisible ? "animate-fade-in-up" : "opacity-0"
+          className={`text-center mb-16 transition-all duration-1000 transform ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
           }`}
         >
           <h2 className="text-3xl md:text-4xl font-bold text-muted-foreground mb-2">
             Our Latest{" "}
-            <span className="text-primary text-5xl md:text-6xl font-extrabold">
-              Short Films on YouTube
+            <span className="text-primary text-5xl md:text-6xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-primary via-yellow-400 to-primary">
+              Short Films
             </span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mt-4">
@@ -139,108 +151,120 @@ const PortfolioSection = () => {
           </p>
         </div>
 
-        {/* ✅ Portfolio Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {portfolioItems.map((item, index) => (
             <div
               key={item.id}
-              className={`group cursor-pointer ${
-                isVisible ? "animate-scale-in" : "opacity-0"
+              className={`group cursor-pointer transition-all duration-700 transform ${
+                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
               }`}
-              style={{ animationDelay: `${index * 0.1}s` }}
+              style={{ transitionDelay: `${index * 150}ms` }}
               onClick={() => setSelectedItem(item)}
             >
-              <div className="relative overflow-hidden rounded-lg shadow-xl hover:shadow-[var(--shadow-yellow)] transition-all duration-300 border-2 border-primary/20 hover:border-primary/50">
-                <img
-                  src={`https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg`}
-                  alt={item.title}
-                  className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) =>
-                    (e.currentTarget.src = `https://img.youtube.com/vi/${item.videoId}/hqdefault.jpg`)
-                  }
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent opacity-70 group-hover:opacity-80 transition-opacity duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
-                  <p className="text-primary text-xs font-bold uppercase tracking-wider mb-1">
+              <div className="relative overflow-hidden rounded-xl shadow-2xl hover:shadow-primary/30 transition-all duration-500 border border-primary/10 hover:border-primary/40 bg-gradient-to-br from-zinc-900 to-black">
+                <div className="relative aspect-video overflow-hidden">
+                  <img
+                    src={`https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg`}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    onError={(e) =>
+                      (e.currentTarget.src = `https://img.youtube.com/vi/${item.videoId}/hqdefault.jpg`)
+                    }
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
+
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div className="bg-primary/90 rounded-full p-6 transform group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                      <Play className="w-10 h-10 text-black fill-current" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-6 relative">
+                  <p className="text-primary text-xs font-bold uppercase tracking-widest mb-2 group-hover:text-yellow-400 transition-colors duration-300">
                     {item.category}
                   </p>
-                  <h3 className="text-foreground text-lg font-bold">{item.title}</h3>
+                  <h3 className="text-foreground text-xl font-bold group-hover:text-primary transition-colors duration-300">{item.title}</h3>
+                  <p className="text-muted-foreground text-sm mt-2 line-clamp-2">{item.description}</p>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* ✅ YT Releases */}
-        <div
-          className={`text-center mt-20 mb-10 ${
-            isVisible ? "animate-fade-in-up" : "opacity-0"
-          }`}
-        >
-          <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-            YT Releases
-          </h3>
-          <p className="text-muted-foreground">
-            Check out our latest releases on YouTube
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {youtubeVideos.map((video, index) => (
-            <div
-              key={video.id}
-              className={`transition-all duration-700 ${
-                isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-              }`}
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              <Card
-                className="overflow-hidden cursor-pointer group hover:shadow-lg transition-all duration-300 hover:scale-105"
-                onClick={() => window.open(video.videoUrl, "_blank", "noopener,noreferrer")}
+        <div ref={ytSectionRef} className="mt-32">
+          <div
+            className={`text-center mb-12 transition-all duration-1000 transform ${
+              ytVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+            }`}
+          >
+            <h3 className="text-4xl md:text-5xl font-bold text-foreground mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white via-primary to-white">
+              YT Releases
+            </h3>
+            <div className="w-24 h-1 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto mb-4"></div>
+            <p className="text-muted-foreground text-lg">
+              Check out our latest releases on YouTube
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {youtubeVideos.map((video, index) => (
+              <div
+                key={video.id}
+                className={`transition-all duration-700 transform ${
+                  ytVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+                }`}
+                style={{ transitionDelay: `${index * 150}ms` }}
               >
-                <CardContent className="p-0">
-                  <div className="relative aspect-video overflow-hidden">
-                    <img
-                      src={video.thumbnail}
-                      alt={video.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="bg-primary rounded-full p-4">
-                        <Play className="w-8 h-8 text-primary-foreground fill-current" />
+                <Card
+                  className="overflow-hidden cursor-pointer group hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 border border-primary/10 hover:border-primary/30 bg-gradient-to-br from-zinc-900 to-black"
+                  onClick={() => window.open(video.videoUrl, "_blank", "noopener,noreferrer")}
+                >
+                  <CardContent className="p-0">
+                    <div className="relative aspect-video overflow-hidden">
+                      <img
+                        src={video.thumbnail}
+                        alt={video.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <div className="bg-primary rounded-full p-5 transform group-hover:scale-110 transition-transform duration-300 shadow-xl">
+                          <Play className="w-10 h-10 text-black fill-current" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-semibold text-lg mb-2 text-foreground group-hover:text-primary transition-colors">
-                      {video.title}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(video.publishedAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
+                    <div className="p-6">
+                      <h4 className="font-bold text-xl mb-3 text-foreground group-hover:text-primary transition-colors duration-300 line-clamp-2">
+                        {video.title}
+                      </h4>
+                      <p className="text-sm text-muted-foreground group-hover:text-muted-foreground/80 transition-colors duration-300">
+                        {new Date(video.publishedAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* ✅ Modal (Lightbox) */}
         <Dialog open={!!selectedItem} onOpenChange={() => setSelectedItem(null)}>
-          <DialogContent className="max-w-4xl">
+          <DialogContent className="max-w-5xl bg-gradient-to-br from-zinc-900 to-black border-primary/20">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold">
+              <DialogTitle className="text-3xl font-bold text-foreground">
                 {selectedItem?.title}
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground">
+              <DialogDescription className="text-primary text-sm uppercase tracking-wider font-semibold">
                 {selectedItem?.category}
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div className="aspect-video w-full rounded-lg overflow-hidden bg-cinematic-black">
+            <div className="space-y-6">
+              <div className="aspect-video w-full rounded-xl overflow-hidden bg-black shadow-2xl border border-primary/10">
                 <iframe
                   src={`https://www.youtube.com/embed/${selectedItem?.videoId}`}
                   title={selectedItem?.title}
@@ -248,7 +272,7 @@ const PortfolioSection = () => {
                   allowFullScreen
                 />
               </div>
-              <p className="text-muted-foreground">{selectedItem?.description}</p>
+              <p className="text-muted-foreground leading-relaxed text-lg">{selectedItem?.description}</p>
             </div>
           </DialogContent>
         </Dialog>
