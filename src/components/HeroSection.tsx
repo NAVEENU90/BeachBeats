@@ -74,7 +74,7 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Scroll Indicator */}
+      {/* Scroll Indicato0r */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <div className="flex flex-col items-center gap-2 animate-fade-in [animation-fill-mode:forwards] opacity-0" style={{ animationDelay: "0.8s" }}>
           <span className="text-xs text-yellow-400 font-semibold tracking-wider uppercase">Scroll</span>
